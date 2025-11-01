@@ -1,0 +1,11 @@
+nano .gitignore
+```
+
+Ajoutez :
+```
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Éditeur
+.vscode/

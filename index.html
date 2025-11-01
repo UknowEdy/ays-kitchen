@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ay's Kitchen - Menu & Commande en ligne</title>
+    
+    <meta name="description" content="Commandez les meilleures spécialités de la cuisine Ouest-Africaine du Togo en ligne chez Ay's Kitchen. Yassa, Mafé, Akoumé et plus.">
+    
+    <!-- Lier le fichier de style externe -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Chargement de Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuration Tailwind pour les couleurs personnalisées
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-dark': '#48bb78',
+                        'primary-light': '#f7fff7',
+                        'secondary-food': '#e53e3e',
+                        'logo-bg-color': '#FEE4EC',
+                    },
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen">
+
+    <!-- Indicateur de Chargement -->
+    <div id="loading-indicator" class="loading-indicator">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- En-tête -->
+    <header class="sticky-header bg-logo-bg-color shadow-md">
+        <div class="max-w-7xl mx-auto p-0 flex justify-between items-center h-28 sm:h-32 md:h-36">
+            
+            <!-- Conteneur du Logo -->
+            <div class="logo-container">
+                <img src="images/logo.jpg" 
+                     alt="Logo Ay's Kitchen" 
+                     class="h-full w-auto object-contain pl-4 py-2" 
+                     onerror="this.onerror=null; this.src='https://placehold.co/150x50/FEE4EC/48BB78?text=Ay%27s+Kitchen+Logo';">
+            </div>
+            
+            <!-- Catchphrase -->
+            <div class="hidden sm:flex flex-grow items-center justify-center h-full">
+                <p class="catchphrase">
+                    Faites-vous plaisir, passez votre commande !
+                </p>
+            </div>
+
+            <!-- Bouton Panier Mobile -->
+            <button id="open-cart-btn" class="sm:hidden p-2 rounded-full bg-primary-dark text-white hover:bg-green-700 relative mr-4" aria-label="Ouvrir le panier">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zM15 17a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span id="cart-count-mobile" class="absolute top-0 right-0 transform translate-x-1/3 -translate-y-1/3 bg-secondary-food text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center opacity-0 transition-opacity">0</span>
+            </button>
+        </div>
+
+        <!-- Informations Client -->
+        <div id="client-info" class="w-full bg-gradient-to-r from-pink-100 via-fuchsia-100 to-violet-100 rounded-2xl shadow-md p-4 md:p-6 mt-4 mx-4 flex flex-col md:flex-row md:items-center md:space-x-4 space-y-3 md:space-y-0 border border-pink-200 max-w-7xl">
+            <div class="flex-1">
+                <label for="client-name" class="block text-xs font-semibold text-pink-700 mb-1">Nom</label>
+                <input 
+                    id="client-name" 
+                    type="text" 
+                    placeholder="Edy T."
+                    class="w-full px-3 py-2 rounded-xl border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:outline-none placeholder-pink-300 bg-white/80 backdrop-blur-sm text-gray-800"
+                >
+            </div>
+
+            <div class="flex-1">
+                <label for="client-phone" class="block text-xs font-semibold text-pink-700 mb-1">Téléphone</label>
+                <input 
+                    id="client-phone" 
+                    type="tel" 
+                    placeholder="+39 347 123 4567"
+                    class="w-full px-3 py-2 rounded-xl border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:outline-none placeholder-pink-300 bg-white/80 backdrop-blur-sm text-gray-800"
+                >
+            </div>
+
+            <div class="flex-[2]">
+                <label for="client-address" class="block text-xs font-semibold text-pink-700 mb-1">Adresse</label>
+                <input 
+                    id="client-address" 
+                    type="text" 
+                    placeholder="Rue, ville, code postal"
+                    class="w-full px-3 py-2 rounded-xl border border-pink-200 focus:ring-2 focus:ring-pink-400 focus:outline-none placeholder-pink-300 bg-white/80 backdrop-blur-sm text-gray-800"
+                >
+            </div>
+        </div>
+    </header>    
+
+    <!-- Boîte de Notification -->
+    <div id="notification-box" class="fixed top-20 left-1/2 transform -translate-x-1/2 p-3 rounded-xl shadow-lg bg-green-500 text-white font-semibold hidden z-50" role="status" aria-live="polite">
+        <!-- Le contenu est inséré par JavaScript -->
+    </div>
+
+    <!-- Contenu Principal et Panier (Sidebar) -->
+    <main class="max-w-7xl mx-auto p-4 sm:flex sm:space-x-8">
+
+        <!-- Section Menu -->
+        <section class="flex-1">
+            <h2 class="text-3xl font-extrabold text-gray-800 mb-6 border-b-2 border-primary-dark pb-2">Nos Saveurs d'Afrique de l'Ouest 🇹🇬</h2>
+            
+            <!-- Barre de Recherche -->
+            <div class="mb-8 p-3 bg-white rounded-xl shadow-inner border border-gray-100">
+                <input type="text" id="meal-search" placeholder="Rechercher un plat (ex: Yassa, Alloco, Fufu...)" class="w-full p-2 text-lg border-none focus:outline-none placeholder-gray-400" aria-label="Rechercher un plat">
+            </div>
+
+            <!-- Conteneur des Cartes de Plats -->
+            <div id="menu-container" class="space-y-12">
+                <!-- Les sections de plats sont injectées ici par JavaScript -->
+            </div>
+        </section>
+
+        <!-- Sidebar Panier -->
+        <aside id="cart-sidebar" class="fixed sm:static right-0 top-0 h-full w-full sm:w-80 bg-white sm:bg-transparent shadow-xl sm:shadow-none p-6 transform translate-x-full sm:translate-x-0 overflow-y-auto z-40" aria-modal="true" role="dialog" aria-labelledby="cart-title">
+            <div class="sm:sticky sm:top-20">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 id="cart-title" class="text-2xl font-bold text-gray-800">Votre Panier</h3>
+                    
+                    <!-- Bouton Fermer Panier Mobile -->
+                    <button id="close-cart-btn" class="sm:hidden text-gray-500 hover:text-gray-800 p-1 rounded-full bg-gray-100" aria-label="Fermer le panier">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                <div id="cart-items" class="space-y-4">
+                    <p id="empty-cart-message" class="text-gray-500 text-center">Votre panier est vide.</p>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-gray-200">
+                    <div class="flex justify-between items-center text-xl font-bold text-gray-800">
+                        <span>Total :</span>
+                        <span id="cart-total">0.00 €</span>
+                    </div>
+
+                    <button id="checkout-btn" class="w-full mt-4 p-3 bg-primary-dark text-white font-semibold rounded-xl hover:bg-green-700 transition duration-150 disabled:opacity-50" disabled aria-disabled="true">
+                        Passer la Commande
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2 text-center">Commande envoyée par email</p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Modale d'Options -->
+    <div id="options-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-meal-title">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <h4 id="modal-meal-title" class="text-2xl font-extrabold text-primary-dark border-b pb-3 mb-4">
+                Options pour le plat
+            </h4>
+            
+            <form id="options-form" onsubmit="event.preventDefault(); addMealWithOptions();">
+                <input type="hidden" id="options-meal-id">
+                
+                <!-- Groupe d'options Piment -->
+                <div id="chili-options-group" class="mb-6">
+                    <label class="block text-lg font-bold text-gray-700 mb-3 flex items-center">
+                        <span class="mr-2">🌶️</span> Niveau de Piment :
+                        <span class="text-sm font-normal text-gray-500 ml-2">(Obligatoire)</span>
+                    </label>
+                    <div class="flex flex-wrap gap-3" role="radiogroup">
+                        <div>
+                            <input type="radio" id="chili-Sans-piment" name="chili" value="Sans piment" class="option-radio" required>
+                            <label for="chili-Sans-piment" class="cursor-pointer px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition">Sans piment</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="chili-Leger" name="chili" value="Léger" class="option-radio" required>
+                            <label for="chili-Leger" class="cursor-pointer px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition">Léger</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="chili-Moyen" name="chili" value="Moyen" class="option-radio" required>
+                            <label for="chili-Moyen" class="cursor-pointer px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition">Moyen</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="chili-Fort" name="chili" value="Fort" class="option-radio" required>
+                            <label for="chili-Fort" class="cursor-pointer px-4 py-2 border border-gray-300 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-100 transition">Fort</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Groupe d'options Base (Accompagnement) -->
+                <div id="base-options-group" class="mb-6">
+                    <label class="block text-lg font-bold text-gray-700 mb-3 flex items-center">
+                        🍚 Accompagnement de Base :
+                        <span class="text-sm font-normal text-gray-500 ml-2">(Obligatoire)</span>
+                    </label>
+                    <div class="flex flex-wrap gap-3" role="radiogroup">
+                        <!-- Les options de base seront injectées ici par JavaScript -->
+                    </div>
+                    <p id="base-help-text" class="text-xs text-gray-500 mt-2 hidden"></p>
+                </div>
+                
+                <!-- Bouton Soumettre -->
+                <button type="submit" class="w-full p-3 bg-primary-dark text-white font-semibold rounded-xl hover:bg-green-700 transition duration-150">
+                    Ajouter au Panier
+                </button>
+            </form>
+
+            <button onclick="closeModal('options-modal')" class="w-full mt-3 p-3 text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition duration-150">
+                Annuler
+            </button>
+        </div>
+    </div>
+    
+    <!-- Modale de Confirmation de Commande -->
+    <div id="confirmation-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title-confirm">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <h4 id="modal-title-confirm" class="text-2xl font-extrabold text-primary-dark border-b pb-3 mb-4 flex items-center">
+                Récapitulatif de Commande
+            </h4>
+
+            <div class="space-y-3 mb-6">
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 font-medium">N° de Commande:</span>
+                    <span id="order-id" class="text-gray-800 font-mono">#000000</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-gray-600 font-medium">Statut:</span>
+                    <span class="text-green-600 font-semibold">En attente de confirmation</span>
+                </div>
+                <div class="flex justify-between text-base">
+                    <span class="text-gray-700 font-bold">Méthode de Paiement:</span>
+                    <span class="text-gray-800 font-semibold">Espèces à la livraison</span>
+                </div>
+            </div>
+
+            <div class="space-y-3 border-t pt-4">
+                <h5 class="font-bold text-lg text-gray-800">Détail des Plats :</h5>
+                <div id="modal-cart-items" class="space-y-2 max-h-48 overflow-y-auto pr-2">
+                    <!-- Les items sont injectés ici par JavaScript -->
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t-2 border-primary-dark">
+                <div class="flex justify-between items-center text-2xl font-extrabold text-gray-900">
+                    <span>TOTAL FINAL :</span>
+                    <span id="modal-cart-total" class="text-secondary-food">0.00 €</span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                <button onclick="closeModal('confirmation-modal')" class="flex-1 p-3 bg-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-300 transition duration-150">
+                    Modifier la Commande
+                </button>
+
+                <button onclick="finalizeOrder()" class="flex-1 p-3 bg-primary-dark text-white font-semibold rounded-xl hover:bg-green-700 transition duration-150">
+                    Finaliser & Confirmer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lier le fichier JavaScript externe -->
+    <script src="script.js"></script>
+</body>
+</html>
